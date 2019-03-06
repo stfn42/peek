@@ -26,7 +26,7 @@ Checks for presence of:
 
 ## Installation
 ```
-git clone https://github.com/stfn/peek.git
+git clone https://github.com/stfn42/peek.git
 ```
 
 ## Dependencies
