@@ -99,7 +99,7 @@ user@host  ~/projects/peek/peek> python peek.py -t https://www.example.com
 [>] X-XSS-Protection Header: 1; mode=block
 [>] X-Content-Type-Options Header: nosniff
 [>] X-Frame-Options Header: SAMEORIGIN
-[>] Content-Security-Policy Header: frame-ancestors 'self' *.be.ch
+[>] Content-Security-Policy Header: frame-ancestors 'self' *.example.ch
 [-] Security Headers: Referrer-Policy header is not set.
 [-] Security Headers: Feature-Policy header is not set.
 [-] Security Headers: Expect-CT header is not set.
