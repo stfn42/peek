@@ -169,7 +169,7 @@ class TargetUrl:
                 else:
                     print('[!] Could not get HSTS Preload Status via API')
 
-            else:
+            elif not res:
                 print('[-] HSTS: max-age directive is missing.')
         elif self.scheme == 'https':
             # Only report this if it's observed via https
