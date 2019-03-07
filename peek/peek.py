@@ -45,6 +45,10 @@ def parse_args():
                         help='Disables checks against public APIs',
                         action="store_true", dest="privacy")
 
+    parser.add_argument('--invalid-ssl',
+                        help='Run checks on sites  with invalid SSL certs',
+                        action="store_true", dest="invalid_ssl")
+
     parser.add_argument('--version', action='version', version='%(prog)s 0.1')
     return parser.parse_args()
 
@@ -76,6 +80,11 @@ def main():
     print("-------")
     args = parse_args()
 
+    # Disable SSL Verification warnings if requested
+    if args.invalid_ssl:
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
     # Populate target list
     __targets = []
 
@@ -88,8 +97,9 @@ def main():
     targets = [t for t in __targets if validate_target(t)]
 
     for t in targets:
-        f = TargetUrl(t)
-        f.run_checks(args.privacy)
+        f = TargetUrl(t, args.invalid_ssl)
+        if f.is_valid():
+            f.run_checks(args.privacy)
         print()
 
 class TargetUrl:
@@ -103,23 +113,35 @@ class TargetUrl:
     c_max_age_recommended = 10368000
 
 
-    def __init__(self, url):
+    def __init__(self, url, invalid_ssl):
         self.url = url
-        self.headers = self.fetch_headers()
+        self.headers = self.fetch_headers(invalid_ssl)
         self.scheme = urllib.parse.urlparse(self.url).scheme
 
-    def fetch_headers(self):
+    def is_valid(self):
+        if self.headers:
+            return True
+
+    def fetch_headers(self, invalid_ssl):
         custom_headers = {'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; '
                                   'x64) AppleWebKit/537.36 (KHTML, like Gecko) '
                                   'Chrome/71.0.3578.98 Safari/537.36')
                           }
 
-        r = requests.head(self.url, headers=custom_headers)
+        try:
+            r = requests.head(self.url, headers=custom_headers)
+        except requests.exceptions.SSLError:
+            print('[-] SSL connection to %s could not be verified.' % (self.url))
+            if invalid_ssl:
+                print('[-] Retrying without verification.')
+                r = requests.head(self.url, headers=custom_headers, verify=False)
+            else:
+                print('[-] Ignoring this host. Use --invalid-ssl to force unverified connections')
+                r = None
         if r:
             return r.headers
         else:
             print('[!] Error getting headers.')
-            return False
 
     def run_checks(self, privacy):
         print('[+] Started check on', self.url)
