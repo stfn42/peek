@@ -108,7 +108,7 @@ user@host  ~/projects/peek/peek> python peek.py -t https://www.example.com
 
 
 ## Known issues
-* _peek_ does not yet handle invalid SSL certificates gracefully.
+* ~~_peek_ does not yet handle invalid SSL certificates gracefully.~~ It does now.
 
 ## Shoutouts
 * Adam Caudill provides a helpful API to query the inclusion of domains in various HSTS Preload lists. It can be found at https://hstspreload.com/ and is being used within _peek_.
