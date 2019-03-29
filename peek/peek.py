@@ -10,11 +10,14 @@ Example:
 
 CAUTION: Hacky code. Here be dragons.
 Use at your own risk. Pull requests welcome.
+Contact: @stfn42 on Twitter, stefan@stefanfriedli.ch
 
 Todo:
     * Full checks for CSP, Feature-Policy and Referrer-Policy
     (currently only checks for existence)
-    * Refactor hacky code (may or may not happen...)
+    * Add support for redirects
+    * Recognize malformed/duplicate headers (see GitHub Issue)
+    * Refactor hacky code (at some point...)
 """
 
 import argparse
@@ -45,9 +48,9 @@ def parse_args():
                         help='Disables checks against public APIs',
                         action="store_true", dest="privacy")
 
-    parser.add_argument('--invalid-ssl',
+    parser.add_argument('--insecure',
                         help='Run checks on sites  with invalid SSL certs',
-                        action="store_true", dest="invalid_ssl")
+                        action="store_true", dest="insecure")
 
     parser.add_argument('--version', action='version', version='%(prog)s 0.1')
     return parser.parse_args()
@@ -81,7 +84,7 @@ def main():
     args = parse_args()
 
     # Disable SSL Verification warnings if requested
-    if args.invalid_ssl:
+    if args.insecure:
         import urllib3
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -97,10 +100,11 @@ def main():
     targets = [t for t in __targets if validate_target(t)]
 
     for t in targets:
-        f = TargetUrl(t, args.invalid_ssl)
+        f = TargetUrl(t, args.insecure)
         if f.is_valid():
             f.run_checks(args.privacy)
         print()
+
 
 class TargetUrl:
     # Prepare regex on class level - not sure if this works as intended.
@@ -112,31 +116,30 @@ class TargetUrl:
 
     c_max_age_recommended = 10368000
 
-
-    def __init__(self, url, invalid_ssl):
+    def __init__(self, url, insecure):
         self.url = url
-        self.headers = self.fetch_headers(invalid_ssl)
+        self.headers = self.fetch_headers(insecure)
         self.scheme = urllib.parse.urlparse(self.url).scheme
 
     def is_valid(self):
         if self.headers:
             return True
 
-    def fetch_headers(self, invalid_ssl):
+    def fetch_headers(self, insecure):
         custom_headers = {'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; '
-                                  'x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                                  'Chrome/71.0.3578.98 Safari/537.36')
+                                         'x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                                         'Chrome/71.0.3578.98 Safari/537.36')
                           }
 
         try:
             r = requests.head(self.url, headers=custom_headers)
         except requests.exceptions.SSLError:
             print('[-] SSL connection to %s could not be verified.' % (self.url))
-            if invalid_ssl:
+            if insecure:
                 print('[-] Retrying without verification.')
                 r = requests.head(self.url, headers=custom_headers, verify=False)
             else:
-                print('[-] Ignoring this host. Use --invalid-ssl to force unverified connections')
+                print('[-] Ignoring this host. Use --insecure to force unverified connections')
                 r = None
         if r:
             return r.headers
@@ -164,7 +167,8 @@ class TargetUrl:
                     print('[-] HSTS: Multiple max-age directives found. Will use the last one for checks.')
                 max_age = int(res[-1])
                 if 0 < max_age < TargetUrl.c_max_age_recommended:
-                    print('[-] HSTS: max-age is set to %i, should be %i or higher.' % (max_age, TargetUrl.c_max_age_recommended))
+                    print('[-] HSTS: max-age is set to %i, should be %i or higher.' % (
+                    max_age, TargetUrl.c_max_age_recommended))
                 elif max_age == 0:
                     print('[-] HSTS: max-age is set to 0. This will instruct the browser to delete HSTS cache entry.')
 
@@ -234,6 +238,7 @@ class TargetUrl:
                 print('[>] %s Header: %s' % (__h, h))
             else:
                 print('[-] Security Headers: %s header is not set.' % (__h))
+
 
 # Call main function...
 main()
