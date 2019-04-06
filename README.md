@@ -106,6 +106,15 @@ user@host  ~/projects/peek/peek> python peek.py -t https://www.example.com
 
 ```
 
+## Docker
+
+When using docker you don't need to have Python installed.
+For example, run the following command to build peek in a linux-based container.
+
+```
+docker build --tag peek .
+docker run -it --rm peek -t https://www.stefanfriedli.ch
+```
 
 ## Known issues
 * ~~_peek_ does not yet handle invalid SSL certificates gracefully.~~ It does now.
