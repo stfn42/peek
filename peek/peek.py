@@ -63,7 +63,7 @@ def validate_target(target):
         return False
 
     try:
-        __host = urllib.parse.urlparse(target).netloc
+        __host = urllib.parse.urlparse(target).hostname
         socket.gethostbyname(__host)
     except socket.gaierror:
         print('[!] %s cannot be resolved.' % target)
