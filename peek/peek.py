@@ -162,8 +162,9 @@ class TargetUrl:
             res = TargetUrl.r_hsts_maxage.findall(h)
             if res:
                 if len(res) > 1:
-                    print('[-] HSTS: Multiple max-age directives found. Will use the last one for checks.')
-                max_age = int(res[-1])
+                    print('[-] HSTS: Multiple Strict-Transport-Security headers detected. '
+                          'Per RFC 6797, only the first is processed by browsers; using the first for checks.')
+                max_age = int(res[0])
                 if 0 < max_age < TargetUrl.c_max_age_recommended:
                     print('[-] HSTS: max-age is set to %i, should be %i or higher.' % (
                     max_age, TargetUrl.c_max_age_recommended))
