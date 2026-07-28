@@ -68,7 +68,7 @@ Ping me on Twitter @stfn42 if you get stuck.
 Some additional things to consider are:
 * `-t` expects _one_ target host. If you need more than that, consider using a target file or building a script to call _peek_.
 * `-l` will accept a text file with URLs, one per line. They must include schemes (http:// or https://).
-* If `--privacy` is not specified, *peek* will look up domains that use the HSTS preload directive using the API provided at hstspreload.com. This argument will also be used in the future to prevent information leakage to other APIs.
+* ~~If `--privacy` is not specified, *peek* will look up domains that use the HSTS preload directive using the API provided at hstspreload.com.~~ **Note:** hstspreload.com is defunct (the domain no longer resolves); this lookup has been removed from _peek_. This argument will also be used in the future to prevent information leakage to other APIs.
 
 ## Example
 ```
@@ -77,10 +77,6 @@ peek.py
 -------
 [+] Started check on https://www.stefanfriedli.ch
 [>] HSTS Header: max-age=31536000; includeSubDomains; preload
-[*] HSTS: Preload Status:
-	[X] Chrome
-	[ ] Firefox
-	[ ] Tor
 [>] X-XSS-Protection Header: 1; mode=block
 [>] X-Content-Type-Options Header: nosniff
 [>] X-Frame-Options Header: SAMEORIGIN
@@ -120,4 +116,4 @@ docker run -it --rm peek -t https://www.stefanfriedli.ch
 * ~~_peek_ does not yet handle invalid SSL certificates gracefully.~~ It does now.
 
 ## Shoutouts
-* Adam Caudill provides a helpful API to query the inclusion of domains in various HSTS Preload lists. It can be found at https://hstspreload.com/ and is being used within _peek_.
+* ~~Adam Caudill provides a helpful API to query the inclusion of domains in various HSTS Preload lists. It can be found at https://hstspreload.com/ and is being used within _peek_.~~ **Note:** This service is defunct as of 2026 (the domain no longer resolves), and the functionality has been removed from _peek_.

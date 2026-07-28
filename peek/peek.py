@@ -26,8 +26,6 @@ import urllib.parse
 import validators
 import requests
 import re
-import json
-from tld import get_tld
 
 
 def parse_args():
@@ -181,22 +179,6 @@ class TargetUrl:
             res = TargetUrl.r_hsts_preload.search(h)
             if not res:
                 print('[-] HSTS: preload directive is missing.')
-            elif res and not privacy:
-                fld = get_tld(self.url, as_object=True).fld
-                __r = requests.get('https://hstspreload.com/api/v1/status/%s' % fld, headers={'User-Agent': 'peek'})
-                if __r:
-                    status = json.loads(__r.text)
-                    print('[*] HSTS: Preload Status:')
-                    print('\t[%s] Chrome' % ('X' if status['chrome'] else ' '))
-                    print('\t[%s] Firefox' % ('X' if status['firefox'] else ' '))
-                    print('\t[%s] Tor' % ('X' if status['tor'] else ' '))
-                    if not status['chrome'] and not status['firefox'] and not status['tor']:
-                        print('[-] HSTS: preload directive was set recently or was not submitted.')
-                else:
-                    print('[!] Could not get HSTS Preload Status via API')
-
-            elif not res:
-                print('[-] HSTS: max-age directive is missing.')
         elif self.scheme == 'https':
             # Only report this if it's observed via https
             print('[-] Strict-Transport-Security header is not set.')
